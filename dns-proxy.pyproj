@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="dnsproxy\behavior.py" />
     <Compile Include="dnsproxy\config.py" />
+    <Compile Include="dnsproxy\website.py" />
     <Compile Include="dnsproxy\__init__.py">
       <SubType>Code</SubType>
     </Compile>

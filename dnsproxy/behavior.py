@@ -1,6 +1,6 @@
 """DNS proxy response behavior module."""
 
-from re import compile
+from re import compile as regex_compile
 from logging import getLogger
 
 IP_REGEX_KEY = 'ipRegex'
@@ -24,7 +24,7 @@ class Behavior(object):
         """Creates new behavior accepting IP address which is handled and strategy.
         
         """
-        self.ip_regex = compile(ip_regex)
+        self.ip_regex = regex_compile(ip_regex)
         self.strategy = strategy
         self.address = address
         self.min_log_level = min_log_level
@@ -61,7 +61,7 @@ class Behavior(object):
 
         Returns self.
         """
-        self.ip_regex = compile(json[IP_REGEX_KEY])
+        self.ip_regex = regex_compile(json[IP_REGEX_KEY])
         self.strategy = json[STRATEGY_KEY]
         if ADDRESS_KEY in json:
             self.address = json[ADDRESS_KEY]
