@@ -5,13 +5,15 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c8dcca1e-c0dc-4e5a-ad32-715db4e400ba</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>dnsproxy\__init__.py</StartupFile>
+    <StartupFile>dnsproxyapp.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>dns-proxy</Name>
     <RootNamespace>dns-proxy</RootNamespace>
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,15 +24,41 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="dnsproxyapp.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dnsproxy\behavior.py" />
     <Compile Include="dnsproxy\config.py" />
-    <Compile Include="dnsproxy\website.py" />
+    <Compile Include="dnsproxy\website\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dnsproxy\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="dnsproxy\__main__.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dnsproxy\" />
+    <Folder Include="dnsproxy\website\static\" />
+    <Folder Include="dnsproxy\website\static\images\" />
+    <Folder Include="dnsproxy\website\templates\" />
+    <Folder Include="dnsproxy\website\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="dnsproxy\website\static\images\dropdown_left.gif" />
+    <Content Include="dnsproxy\website\static\images\dropdown_right.gif" />
+    <Content Include="dnsproxy\website\static\images\dropdown_side.gif" />
+    <Content Include="dnsproxy\website\static\images\index.html" />
+    <Content Include="dnsproxy\website\static\jquery.1.9.0.min.js" />
+    <Content Include="dnsproxy\website\static\jquery.min.map" />
+    <Content Include="dnsproxy\website\static\layout.css" />
+    <Content Include="dnsproxy\website\templates\index.html" />
+    <Content Include="dnsproxy\website\templates\logs.html" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -58,3 +58,4 @@ target/
 
 # Visual Studio settings folder
 .vs/
+*.pyproj.user

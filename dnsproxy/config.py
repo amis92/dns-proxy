@@ -3,7 +3,7 @@
 import behavior
 import json
 
-JSON_CONF_DEFAULT_FILE = 'dnsproxy.config'
+JSON_CONF_DEFAULT_FILE = 'dnsproxy.config.json'
 ROOT_KEY = 'dnsProxy'
 CONF_KEY = 'config'
 HTTP_ACCESS_PORT_KEY = 'httpAccessPort'
@@ -18,10 +18,13 @@ class Config(object):
 
     def default(self):
         """Sets default values.
+
+        Returns self.
         """
         self.http_access_port = 8080
         self.dns_port = 53
         self.behaviors = []
+        return self
 
     def from_json(self, json):
         """Setups Config using JSON object.
@@ -61,4 +64,5 @@ class Config(object):
         """Saves current config to JSON-formatted config file.
         """
         with open(filename, mode = 'w') as file:
-            json.dump(self.to_json(), indent = True)
+            json.dump(self.to_json(), file, indent = True)
+            print 'config saved'
