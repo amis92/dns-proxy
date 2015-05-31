@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<title>DNS Proxy - logi</title>
+<meta charset="iso-8859-1">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='layout.css') }}">
+<script type=text/javascript src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
+<script type=text/javascript src="{{url_for('static', filename='dns-controller.js') }}"></script>
+</head>
+<body>
+<div style="display:block; width:100%; text-align:left; color: white; background-color: #eeeeee">
+  <header id="header" class="clear">
+    <div id="hgroup">
+      <h1><a href="#">DNS Proxy - logi</a></h1>
+    </div>
+  </header>
+</div>
+<!-- ################################################################################################ -->
+<div style="display:block; width:100%; text-align:left; color: white; background-color: #27A1CA">
+  <nav id="topnav">
+    <ul class="clear">
+      <li class="active first"><a href="index.html">Home</a></li>
+      <li><a href="logs.html">Logi</a></li>
+    </ul>
+  </nav>
+</div>
+<!-- content -->
+<div class="wrapper row3">
+  <div id="container">
+    <!-- ################################################################################################ -->
+	<div class="table">
+		<h2 style="width: 100%; text-align: left;">Logi</h2>
+        <table class="table" style="border:1px solid #000000;">
+            <tr>
+                <td>IP</td>
+                <td >Strategia</td>
+                <td>Adres</td>
+            </tr>
+            <tr>
+                <td>Row 1</td>
+                <td>Row 1</td>
+                <td>Row 1</td>
+            </tr>
+            <tr>
+                <td>Row 2</td>
+                <td>Row 2</td>
+                <td>Row 2</td>
+            </tr>
+            <tr>
+                <td>Row 3</td>
+				<td>Row 3</td>
+                <td>Row 3</td>
+            </tr>
+        </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

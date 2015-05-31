@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<title>DNS Proxy</title>
+<meta charset="iso-8859-1">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='layout.css') }}">
+<script type=text/javascript src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
+<script type=text/javascript src="{{url_for('static', filename='dns-controller.js') }}"></script>
+<script type="text/javascript">
+  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+</head>
+<body>
+<div style="display:block; width:100%; text-align:left; color: white; background-color: #eeeeee">
+  <header id="header" class="clear">
+    <div id="hgroup">
+      <h1><a href="#">DNS Proxy</a></h1>
+    </div>
+  </header>
+</div>
+<!-- ################################################################################################ -->
+<div style="display:block; width:100%; text-align:left; color: white; background-color: #27A1CA">
+  <nav id="topnav">
+    <ul class="clear">
+      <li class="active first"><a href="index.html">Home</a></li>
+      <li><a href="logs.html">Logi</a></li>
+    </ul>
+  </nav>
+</div>
+<!-- content -->
+<div class="wrapper row3">
+  <div id="container">
+    <!-- ################################################################################################ -->
+	<div style="width: 50%; float: right;">
+		<h2 style="float: right; width: 100%; text-align: right;">Status serwera</h2>
+		<div class="onoffswitch">
+			<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+			<label class="onoffswitch-label" for="myonoffswitch">
+				<span class="onoffswitch-inner"></span>
+				<span class="onoffswitch-switch"></span>
+			</label>
+		</div>
+	</div>
+	<div style="width: 50%; float: right; padding-bottom: 20px;">
+		<h2 style="width: 100%; text-align: left;">Konfiguracja</h2>
+		</br>
+		<h3 style="width: 100%; text-align: left;">Port dns</h3>
+		<input id="dnsPortInput" class="input-css style="clear: left;" placeholder="port dns" />
+		<input id="savePortsButton" type="button" class="button-css" value="Zapisz" onclick="savePorts()" />
+	</div>
+    <!-- ################################################################################################ -->
+	<div class="table">
+		<h2 style="width: 100%; text-align: left;">Definicje zachowan</h2>
+        <table class="table" style="border:1px solid #000000;">
+            <tr>
+                <td>IP</td>
+                <td >Strategia</td>
+                <td>Adres</td>
+				<td style='width: 100px;'></td>
+            </tr>
+        </table>
+    </div>
+	<input id="addButton" type="button" class="button-css" value="Dodaj" onclick="addConfiguration()" />
+	<input id="ipInput" class="input-css" style="display:none" placeholder="IP" />
+	<label id="strategySelect" style="display:none">
+		<select>
+			<option selected> respond </option>
+			<option>forward</option>
+			<option>block</option>
+		</select>
+	</label>
+	<input id="addressInput" class="input-css" style="display:none" placeholder="Adres" />
+	<input id="saveButton" type="button" class="button-css" style="display:none" value="Zapisz" onclick="saveConfiguration()" />
+  </div>
+</div>
+</body>
+<script>
+$( document ).ready(function() {
+	
+	$.getJSON($SCRIPT_ROOT + '/_load_port', {}, function(data) {
+		$('#dnsPortInput').val(data.results.dnsPort);
+    });
+    $.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
+		var html = "";
+			for(var i = 0; i < data.results.length; i++){
+				html = html + "<tr>";
+				html = html + "<td>" + data.results[i].ip + "</td>"
+				html = html + "<td>" + data.results[i].strategy + "</td>"
+				html = html + "<td>" + data.results[i].address + "</td>"
+				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
+				html = html + "</tr>";
+			}
+		
+		$('table').append(html);
+    });
+});
+
+function savePorts(){
+	$.getJSON($SCRIPT_ROOT + '/_save_port', {
+		dnsPort: $('#dnsPortInput').val()
+	}, function(data){});
+}
+
+function addConfiguration(){
+	$("#addButton").hide();
+	$("#saveButton").css("display", "inline");
+	$("#ipInput").css("display", "inline");
+	$("#strategySelect").css("display", "inline");
+	$("#addressInput").css("display", "inline");
+}
+
+function saveConfiguration(){
+
+	$.getJSON($SCRIPT_ROOT + '/_save_configuration', {
+		ip: $("#ipInput").val(),
+		strategy: $("#strategySelect option:selected").text(),
+		address: $("#addressInput").val()
+	}, function(data){});
+	
+	$('tbody').children("tr").remove();
+	var html= "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>"
+	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
+			for(var i = 0; i < data.results.length; i++){
+				html = html + "<tr>";
+				html = html + "<td>" + data.results[i].ip + "</td>"
+				html = html + "<td>" + data.results[i].strategy + "</td>"
+				html = html + "<td>" + data.results[i].address + "</td>"
+				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
+				html = html + "</tr>";
+			}
+		
+		$('table').append(html);
+    });
+	
+		$("#addButton").show();
+		$("#saveButton").hide();
+		$('#strategySelect option:eq(0)').prop('selected', true)
+		$("#strategySelect").hide();
+		$("#ipInput").val("");
+		$("#ipInput").hide();
+		$("#addressInput").val("");
+		$("#addressInput").hide();
+}
+
+function deleteConfiguration(buttonId){
+
+	$.getJSON($SCRIPT_ROOT + '/_delete_configuration', {
+		id: buttonId
+	}, function(data){});
+
+	$('tbody').children("tr").remove();
+	var html= "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>"
+	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
+			for(var i = 0; i < data.results.length; i++){
+				html = html + "<tr>";
+				html = html + "<td>" + data.results[i].ip + "</td>"
+				html = html + "<td>" + data.results[i].strategy + "</td>"
+				html = html + "<td>" + data.results[i].address + "</td>"
+				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
+				html = html + "</tr>";
+			}
+		
+		$('table').append(html);
+    });
+}
+</script>
+
+</html>
