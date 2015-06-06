@@ -36,10 +36,10 @@ class TcpThread(Thread):
             conn.close()
         #tcpSocket.shutdown(1)
         tcpSocket.close()
+        print 'TCP stopped'
 
     def stop(self):
         self.active = False
-        print 'TCP stopped'
 
 class UdpThread(Thread):
     def __init__(self, server):
@@ -63,10 +63,10 @@ class UdpThread(Thread):
                 udpSocket.sendto(response.pack(), addr)
         #udpSocket.shutdown(1)
         udpSocket.close()
+        print 'UDP stopped'
 
     def stop(self):
         self.active = False
-        print 'UDP stopped'
 
 class Server:
     def __init__(self, config = None):
@@ -76,7 +76,7 @@ class Server:
         self.config = config
         self.udpThread = UdpThread(self)
         self.tcpThread = TcpThread(self)
-        print 'Server started'
+        print 'DNS proxy server created'
 
     def is_alive(self):
         return self.udpThread.isAlive() or self.tcpThread.isAlive()
