@@ -13,3 +13,10 @@ $ python dnsproxyapp
 
 Either way, you will have to do it as admin with default config:
 - the proxy binds to port 53 if not changed.
+
+## Dependencies
+
+This package requires following packages:
+	* `dnspython`,
+	* `dnslib` and
+	* 'Flask`.
