@@ -2,6 +2,9 @@
 
 from re import compile as regex_compile, match
 from logging import getLogger
+from dnslib import RR, A, QTYPE
+from dns.exception import DNSException
+import dns.resolver
 
 IP_KEY = 'ip'
 STRATEGY_KEY = 'strategy'
@@ -13,8 +16,8 @@ DEFAULT_MIN_LOG_LEVEL = 'DEBUG'
 class Behavior(object):
     """Behavior for given address. Creates response depending on set strategy.
 
-    Call behavior.handles(req) to check if it's handling given address.
-    Call behavior.handle(req) to obtain response ready to be sent.
+    Call behavior.handles(address) to check if it's handling given address.
+    Call behavior.handle(request) to obtain dns response or None if no response should be sent.
     """
 
     strategies = dict(
@@ -32,34 +35,47 @@ class Behavior(object):
         self.min_log_level = min_log_level
         self.logger = getLogger(__name__)
 
-    def handles(self, req):
-        """Checks whether given request's address is handled by this behavior
+    def handles(self, address):
+        """Checks whether given address is handled by this behavior
 
         Returns True if it handles.
         """
-        return match(self.address, req.address) != None
+        return match(self.address, address) != None
 
-    def handle(self, req):
+    def handle(self, request):
         """Handles provided request according to set strategy.
 
-        Returns response.
+        Returns response or None if no response should be sent.
         """
-        return self.strategies[self.strategy](req)
+        return self.strategies[self.strategy](request)
 
-    def block(self, req):
-        """Returns response with 'not found' content."""
-        self.logger.info(str.format("Blocked request: {req}", req=req))
-        # TODO return meaningful block response
+    def block(self, request):
+        """Returns None."""
+        address = str(request.questions[0].qname)
+        self.logger.info(str.format('Blocking request: {addr}', addr=address))
+        return None
 
-    def forward(self, req):
+    def forward(self, request):
         """Returns response received from system resolver."""
-        self.logger.info(str.format("Forwarded request: {req}", req=req))
-        # TODO return meaningful forward response
+        address = str(request.questions[0].qname)
+        self.logger.info(str.format('Forwarding request: {addr}', addr=address))
+        try:
+            answers = dns.resolver.query(address, 'A')
+        except DNSException:
+            self.logger.exception(str.format('Exception when forwarding request: {addr}', addr=address))
+        response = request.reply()
+        for rdata in answers:
+            ip = rdata.address
+            response.add_answer(RR(address, QTYPE.A, rdata=A(ip)))
+        return response
 
-    def respond(self, req):
+    def respond(self, request):
         """Returns response containing self.ip."""
-        self.logger.info(str.format('Responded to request: {req}', req=req))
-        # TODO return meaningful generated address response
+        address = str(request.questions[0].qname)
+        self.logger.info(str.format('Responding to request for: {addr} with ip={ip}', addr=address, ip = self.ip))
+        response = request.reply()
+        response.add_answer(RR(address, QTYPE.A, rdata=A(self.ip)))
+        return response
 
     def from_json(self, json):
         """Sets attributes from provided JSON object/dict.
@@ -88,3 +104,17 @@ class Behavior(object):
             STRATEGY_KEY : self.strategy,
             ADDRESS_KEY : self.address,
             MIN_LOG_LEVEL_KEY : self.min_log_level }
+
+def first_or_default(request, behaviors):
+    """Finds a behavior in list of behaviors,
+    which handles given request.
+
+    Returns behavior if any is found, or default behavior otherwise.
+    """
+    address = str(request.questions[0].qname)
+    if behaviors == None or len(behaviors) == 0:
+        return Behavior(address)
+    for behavior in behaviors:
+        if (behavior.handles(address)):
+            return behavior
+    return Behavior(address)
