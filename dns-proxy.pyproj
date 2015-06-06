@@ -29,6 +29,7 @@
     </Compile>
     <Compile Include="dnsproxy\behavior.py" />
     <Compile Include="dnsproxy\config.py" />
+    <Compile Include="dnsproxy\server.py" />
     <Compile Include="dnsproxy\website\__init__.py">
       <SubType>Code</SubType>
     </Compile>
