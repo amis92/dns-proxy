@@ -3,9 +3,9 @@
 <head>
 <title>DNS Proxy</title>
 <meta charset="iso-8859-1">
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='layout.css') }}">
-<script type=text/javascript src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
-<script type=text/javascript src="{{url_for('static', filename='dns-controller.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='layout.css') }}">
+<script type="text/javascript" src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='dns-controller.js') }}"></script>
 <script type="text/javascript">
   var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
@@ -34,7 +34,7 @@
 	<div style="width: 50%; float: right;">
 		<h2 style="float: right; width: 100%; text-align: right;">Status serwera</h2>
 		<div class="onoffswitch">
-			<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+			<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked="checked" onclick="switchOnOff()">
 			<label class="onoffswitch-label" for="myonoffswitch">
 				<span class="onoffswitch-inner"></span>
 				<span class="onoffswitch-switch"></span>
@@ -45,7 +45,7 @@
 		<h2 style="width: 100%; text-align: left;">Konfiguracja</h2>
 		</br>
 		<h3 style="width: 100%; text-align: left;">Port dns</h3>
-		<input id="dnsPortInput" class="input-css style="clear: left;" placeholder="port dns" />
+		<input id="dnsPortInput" class="input-css" style="clear: left;" placeholder="port dns" />
 		<input id="savePortsButton" type="button" class="button-css" value="Zapisz" onclick="savePorts()" />
 	</div>
     <!-- ################################################################################################ -->
@@ -56,7 +56,7 @@
                 <td>IP</td>
                 <td >Strategia</td>
                 <td>Adres</td>
-				<td style='width: 100px;'></td>
+				<td style="width: 100px;"></td>
             </tr>
         </table>
     </div>
@@ -95,6 +95,20 @@ $( document ).ready(function() {
     });
 });
 
+setStartStopFromJSON = function(data) {
+    $('#myonoffswitch').prop('checked', data.isAlive);
+}
+
+function switchOnOff() {
+    var url = $SCRIPT_ROOT;
+    if ($('#myonoffswitch').prop('checked')) {
+        url = url + '/_start_proxy';
+    } else {
+        url = url + '/_stop_proxy';
+    }
+    $.getJSON(url, {}, setStartStopFromJSON);
+}
+
 function savePorts(){
 	$.getJSON($SCRIPT_ROOT + '/_save_port', {
 		dnsPort: $('#dnsPortInput').val()
@@ -118,28 +132,28 @@ function saveConfiguration(){
 	}, function(data){});
 	
 	$('tbody').children("tr").remove();
-	var html= "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>"
+    var html = "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>";
 	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
 			for(var i = 0; i < data.results.length; i++){
 				html = html + "<tr>";
 				html = html + "<td>" + data.results[i].ip + "</td>"
 				html = html + "<td>" + data.results[i].strategy + "</td>"
 				html = html + "<td>" + data.results[i].address + "</td>"
-				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
+			    html = html + "<td><input id='button-" + i + "' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration(" + i + ")'/></td>";
 				html = html + "</tr>";
 			}
 		
 		$('table').append(html);
     });
 	
-		$("#addButton").show();
-		$("#saveButton").hide();
-		$('#strategySelect option:eq(0)').prop('selected', true)
-		$("#strategySelect").hide();
-		$("#ipInput").val("");
-		$("#ipInput").hide();
-		$("#addressInput").val("");
-		$("#addressInput").hide();
+	$("#addButton").show();
+	$("#saveButton").hide();
+    $('#strategySelect option:eq(0)').prop('selected', true);
+	$("#strategySelect").hide();
+	$("#ipInput").val("");
+	$("#ipInput").hide();
+	$("#addressInput").val("");
+	$("#addressInput").hide();
 }
 
 function deleteConfiguration(buttonId){
@@ -149,14 +163,14 @@ function deleteConfiguration(buttonId){
 	}, function(data){});
 
 	$('tbody').children("tr").remove();
-	var html= "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>"
+    var html = "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>";
 	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
 			for(var i = 0; i < data.results.length; i++){
 				html = html + "<tr>";
-				html = html + "<td>" + data.results[i].ip + "</td>"
-				html = html + "<td>" + data.results[i].strategy + "</td>"
-				html = html + "<td>" + data.results[i].address + "</td>"
-				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
+			    html = html + "<td>" + data.results[i].ip + "</td>";
+			    html = html + "<td>" + data.results[i].strategy + "</td>";
+			    html = html + "<td>" + data.results[i].address + "</td>";
+			    html = html + "<td><input id='button-" + i + "' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration(" + i + ")'/></td>";
 				html = html + "</tr>";
 			}
 		

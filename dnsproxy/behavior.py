@@ -105,7 +105,7 @@ class Behavior(object):
             ADDRESS_KEY : self.address,
             MIN_LOG_LEVEL_KEY : self.min_log_level }
 
-def first_or_default(request, behaviors):
+def first_or_default(behaviors, request):
     """Finds a behavior in list of behaviors,
     which handles given request.
 
