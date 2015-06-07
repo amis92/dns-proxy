@@ -8,20 +8,24 @@ from dnslib import DNSRecord
 from threading import Thread
 from dnsproxy.config import Config
 from dnsproxy.behavior import first_or_default, Behavior
+import logging
 
+module_logger = logging.getLogger('dnsproxy.server')
 BUFFER_SIZE = 1024
 timeout = 10
 
 class TcpThread(Thread):
     def __init__(self, server):
         Thread.__init__(self)
+        self.logger = logging.getLogger('dnsproxy.server.TcpThread')
         self.active = False
         self.server = server
-        self.name = 'dnsproxy TCP thread'
+        self.name = 'dnsproxy-TCP'
+        self.logger.debug('created')
 
     def run(self):
-        print 'TCP started'
         self.active = True
+        self.logger.info('thread started')
         tcpSocket = self.server.createTcpSocket()
         tcpSocket.listen(1)
         while self.active:
@@ -36,7 +40,7 @@ class TcpThread(Thread):
             conn.close()
         #tcpSocket.shutdown(1)
         tcpSocket.close()
-        print 'TCP stopped'
+        self.logger.info('thread stopped')
 
     def stop(self):
         self.active = False
@@ -44,13 +48,15 @@ class TcpThread(Thread):
 class UdpThread(Thread):
     def __init__(self, server):
         Thread.__init__(self)
+        self.logger = logging.getLogger('dnsproxy.server.TcpThread')
         self.active = False
         self.server = server
-        self.name = 'dnsproxy UDP thread'
+        self.name = 'dnsproxy-UDP'
+        self.logger.debug('created')
 
     def run(self):
-        print 'UDP started'
         self.active = True
+        self.logger.info('thread started')
         udpSocket = self.server.createUdpSocket()
         while self.active:
             rlist, wlist, xlist = select.select([udpSocket], [], [], timeout)
@@ -63,47 +69,57 @@ class UdpThread(Thread):
                 udpSocket.sendto(response.pack(), addr)
         #udpSocket.shutdown(1)
         udpSocket.close()
-        print 'UDP stopped'
+        self.logger.info('thread stopped')
 
     def stop(self):
         self.active = False
 
 class Server:
     def __init__(self, config = None):
+        self.logger = logging.getLogger('dnsproxy.server.Server')
         self.host = self.getNameservers()[0]
         if not config:
             config = Config()
         self.config = config
         self.udpThread = UdpThread(self)
         self.tcpThread = TcpThread(self)
-        print 'DNS proxy server created'
+        self.logger.debug('server created')
 
     def is_alive(self):
-        return self.udpThread.isAlive() or self.tcpThread.isAlive()
+        tcp_alive = self.tcpThread.isAlive()
+        udp_alive = self.udpThread.isAlive()
+        self.logger.debug('polling alive status, tcp: {tcp}, udp: {udp}'.format(tcp=tcp_alive, udp=udp_alive))
+        return tcp_alive or udp_alive
 
     def startUdp(self):
+        self.logger.debug('trying to start UDP thread')
         if self.udpThread.isAlive():
-            pass
+            self.logger.debug('UDP thread already alive')
         self.udpThread.start()
 
     def stopUdp(self):
+        self.logger.debug('trying to stop UDP thread')
         self.udpThread.stop()
         self.udpThread = UdpThread(self)
 
     def startTcp(self):
+        self.logger.debug('trying to start TCP thread')
         if self.tcpThread.isAlive():
-            pass
+            self.logger.debug('TCP thread already alive')
         self.tcpThread.start()
 
     def stopTcp(self):
+        self.logger.debug('trying to stop TCP thread')
         self.tcpThread.stop()
         self.tcpThread = TcpThread(self)
 
     def start(self):
+        self.logger.debug('trying to start threads')
         self.startUdp()
         #self.startTcp()
 
     def stop(self):
+        self.logger.debug('trying to stop threads')
         self.stopUdp()
         self.stopTcp()
 
@@ -120,6 +136,7 @@ class Server:
         try:
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
+            self.logger.debug('UDP sockopt setting failed', exc_info = True)
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udpSocket.bind((self.host, self.config.dns_port))
         return udpSocket
@@ -129,6 +146,7 @@ class Server:
         try:
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
+            self.logger.debug('UDP sockopt setting failed', exc_info = True)
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         tcpSocket.bind((self.host, self.config.dns_port))
         return tcpSocket

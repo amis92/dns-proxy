@@ -1,17 +1,19 @@
 """DNS proxy response behavior module."""
 
 from re import compile as regex_compile, match
-from logging import getLogger
 from dnslib import RR, A, QTYPE
 from dns.exception import DNSException
 import dns.resolver
+import logging
+
+module_logger = logging.getLogger('dnsproxy.behavior')
 
 IP_KEY = 'ip'
 STRATEGY_KEY = 'strategy'
 DEFAULT_STRATEGY = 'forward'
 ADDRESS_KEY = 'address'
-MIN_LOG_LEVEL_KEY = 'minLogLevel'
-DEFAULT_MIN_LOG_LEVEL = 'DEBUG'
+LOGLEVEL_KEY = 'logLevel'
+DEFAULT_LOGLEVEL = 'DEBUG'
 
 class Behavior(object):
     """Behavior for given address. Creates response depending on set strategy.
@@ -25,44 +27,54 @@ class Behavior(object):
         forward = lambda self, req: Behavior.forward(self, req),
         respond = lambda self, req: Behavior.respond(self, req))
 
-    def __init__(self, address = '', strategy = DEFAULT_STRATEGY, ip = '', min_log_level = DEFAULT_MIN_LOG_LEVEL):
+    def __init__(self, address = '', strategy = DEFAULT_STRATEGY, ip = '', loglevel = DEFAULT_LOGLEVEL):
         """Creates new behavior accepting address which is handled and strategy.
         
         """
+        self.logger = logging.getLogger('dnsproxy.behavior.Behavior')
         self.ip = ip
         self.strategy = strategy
         self.address = address
-        self.min_log_level = min_log_level
-        self.logger = getLogger(__name__)
+        self.loglevel = loglevel
+
+    def __str__(self):
+        return "Behavior(address='{addr}', strategy='{strategy}', ip = '{ip}', log_level = '{loglevel}')".format(
+            addr = self.address,
+            strategy = self.strategy,
+            ip = self.ip,
+            loglevel = self.loglevel)
 
     def handles(self, address):
         """Checks whether given address is handled by this behavior
 
         Returns True if it handles.
         """
-        return match(self.address, address) != None
+        m = match(self.address, address)
+        self.logger.debug("handles check: address '{addr}' by {b}, result: {r}".format(b = str(self), addr=address, r = m != None))
+        return m != None
 
     def handle(self, request):
         """Handles provided request according to set strategy.
 
         Returns response or None if no response should be sent.
         """
-        return self.strategies[self.strategy](request)
+        self.logger.debug("handle: {b}, request: {r}", b = str(self), r = request)
+        return self.strategies[self.strategy](self, request)
 
     def block(self, request):
         """Returns None."""
         address = str(request.questions[0].qname)
-        self.logger.info(str.format('Blocking request: {addr}', addr=address))
+        self.logger.info("{b} - Blocking request for address:'{addr}'".format(addr=address, b=str(self)))
         return None
 
     def forward(self, request):
         """Returns response received from system resolver."""
         address = str(request.questions[0].qname)
-        self.logger.info(str.format('Forwarding request: {addr}', addr=address))
+        self.logger.info("{b} - Forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
         try:
             answers = dns.resolver.query(address, 'A')
         except DNSException:
-            self.logger.exception(str.format('Exception when forwarding request: {addr}', addr=address))
+            self.logger.exception("{b} - Exception when forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
         response = request.reply()
         for rdata in answers:
             ip = rdata.address
@@ -72,7 +84,7 @@ class Behavior(object):
     def respond(self, request):
         """Returns response containing self.ip."""
         address = str(request.questions[0].qname)
-        self.logger.info(str.format('Responding to request for: {addr} with ip={ip}', addr=address, ip = self.ip))
+        self.logger.info("{b} - Responding to request for address:'{addr}'".format(addr=address, b=str(self)))
         response = request.reply()
         response.add_answer(RR(address, QTYPE.A, rdata=A(self.ip)))
         return response
@@ -88,10 +100,10 @@ class Behavior(object):
             self.ip = json[IP_KEY]
         else:
             self.ip = ''
-        if MIN_LOG_LEVEL_KEY in json:
-            self.min_log_level = json[MIN_LOG_LEVEL_KEY]
+        if LOGLEVEL_KEY in json:
+            self.loglevel = json[LOGLEVEL_KEY]
         else:
-            self.min_log_level = DEFAULT_MIN_LOG_LEVEL
+            self.loglevel = DEFAULT_LOGLEVEL
         return self
 
     def to_json(self):
@@ -103,7 +115,7 @@ class Behavior(object):
             IP_KEY : self.ip,
             STRATEGY_KEY : self.strategy,
             ADDRESS_KEY : self.address,
-            MIN_LOG_LEVEL_KEY : self.min_log_level }
+            LOGLEVEL_KEY : self.loglevel }
 
 def first_or_default(behaviors, request):
     """Finds a behavior in list of behaviors,

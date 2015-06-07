@@ -7,7 +7,7 @@ from threading import Thread
 import logging
 
 # below config is to be removed
-logging.basicConfig()
+logging.basicConfig(format="%(asctime)-15s %(levelname)-8s %(name)s.%(funcName)s @ %(threadName)s : %(message)s")
 
 logger = logging.getLogger('dnsproxy')
 
@@ -23,7 +23,7 @@ class App(object):
         self.config = Config().from_file()
         self.server = Server(self.config)
         self.webserver = WebServer(self.config, self.server)
-        self.website_thread = Thread(name='WebServer website thread', target = self.run_website_blocking)
+        self.website_thread = Thread(name='WebServer-thread', target = self.run_website_blocking)
         self.logger.info('created')
 
     def run(self):

@@ -5,12 +5,11 @@ The website allows for convenient, web-based configuration access/update,
 viewing logs and starting/stopping the DNS proxy server."""
 
 from flask import Flask, jsonify, render_template, request
-
 from dnsproxy.config import Config
 from dnsproxy.behavior import Behavior
 import logging
 
-logger = logging.getLogger('dnsproxy.website')
+module_logger = logging.getLogger('dnsproxy.website')
 
 class WebServer(object):
     def __init__(self, config = None, proxyserver = None):
@@ -40,7 +39,7 @@ class WebServer(object):
         @app.route('/_save_port')
         def save_port():
             config.dns_port = request.args.get('dnsPort', 0, type=int)
-            self.logger.debug('saved DNS port {port}', port = config.dns_port)
+            self.logger.debug('saved new DNS port {port}'.format(port = config.dns_port))
             config.to_file()
             return jsonify(result = True)
 
@@ -51,13 +50,15 @@ class WebServer(object):
 
         @app.route('/_load_configuration')
         def load_configuration():
-            print 'load'
             return jsonify(results = [b.to_json() for b in config.behaviors])
 
         @app.route('/_delete_configuration')
         def delete_configuration():
             id = request.args.get('id', 0, type=int)
-            config.behaviors.pop(id)
+            deleted = config.behaviors.pop(id)
+            self.logger.debug("deleted behavior [{id}] {b}".format(
+                             id = id,
+                             b = str(deleted)))
             config.to_file()
             return jsonify(result = True)
 
@@ -68,6 +69,9 @@ class WebServer(object):
             address = request.args.get('address')
             new_behavior = Behavior(address, strategy, ip)
             config.behaviors.append(new_behavior)
+            self.logger.debug("added behavior [{id}] {b}".format(
+                             id = len(config.behaviors) - 1,
+                             b = str(new_behavior)))
             config.to_file()
             return jsonify(result = True)
 

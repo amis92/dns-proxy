@@ -2,6 +2,9 @@
 
 import behavior
 import json
+import logging
+
+module_logger = logging.getLogger('dnsproxy.config')
 
 JSON_CONF_DEFAULT_FILE = 'dnsproxy.config.json'
 ROOT_KEY = 'dnsProxy'
@@ -14,6 +17,7 @@ class Config(object):
     """DNS proxy configuration class"""
 
     def __init__(self):
+        self.logger = logging.getLogger('dnsproxy.config.Config')
         self.default()
 
     def default(self):
@@ -65,4 +69,3 @@ class Config(object):
         """
         with open(filename, mode = 'w') as file:
             json.dump(self.to_json(), file, indent = True)
-            print 'config saved'
