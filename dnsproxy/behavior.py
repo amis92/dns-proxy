@@ -15,6 +15,16 @@ ADDRESS_KEY = 'address'
 LOGLEVEL_KEY = 'logLevel'
 DEFAULT_LOGLEVEL = 'DEBUG'
 
+def getLogLevelNumber(loglevelname):
+    """Parses log level name into log level number.
+   
+    Returns int value of log level. On failure, DEBUG level value is returned."""
+    number = getattr(logging, loglevelname, None)
+    if not isinstance(number, int):
+        module_logger.debug("failed to parse log level name '{name}'".format(name = loglevelname))
+        number = logging.DEBUG
+    return number
+
 class Behavior(object):
     """Behavior for given address. Creates response depending on set strategy.
 
@@ -44,6 +54,9 @@ class Behavior(object):
             ip = self.ip,
             loglevel = self.loglevel)
 
+    def parseloglevel(self):
+        return getLogLevelNumber(self.loglevel)
+
     def handles(self, address):
         """Checks whether given address is handled by this behavior
 
@@ -64,13 +77,13 @@ class Behavior(object):
     def block(self, request):
         """Returns None."""
         address = str(request.questions[0].qname)
-        self.logger.info("{b} - Blocking request for address:'{addr}'".format(addr=address, b=str(self)))
+        self.logger.log(self.parseloglevel(), "{b} - Blocking request for address:'{addr}'".format(addr=address, b=str(self)))
         return None
 
     def forward(self, request):
         """Returns response received from system resolver."""
         address = str(request.questions[0].qname)
-        self.logger.info("{b} - Forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
+        self.logger.log(self.parseloglevel(), "{b} - Forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
         try:
             answers = dns.resolver.query(address, 'A')
         except DNSException:
@@ -84,7 +97,7 @@ class Behavior(object):
     def respond(self, request):
         """Returns response containing self.ip."""
         address = str(request.questions[0].qname)
-        self.logger.info("{b} - Responding to request for address:'{addr}'".format(addr=address, b=str(self)))
+        self.logger.log(self.parseloglevel(), "{b} - Responding to request for address:'{addr}'".format(addr=address, b=str(self)))
         response = request.reply()
         response.add_answer(RR(address, QTYPE.A, rdata=A(self.ip)))
         return response
