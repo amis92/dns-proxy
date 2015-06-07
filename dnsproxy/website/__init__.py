@@ -75,6 +75,35 @@ class WebServer(object):
             config.to_file()
             return jsonify(result = True)
 
+        @app.route('/_read_logs')
+        def read_logs():
+			class LogDTO:
+				def __init__(self, date, logLever, message):
+					self.date = date
+					self.logLever = logLever
+					self.message = message
+			with open('dnsapp.log','r') as f:
+				logs = []
+				for line in f:
+					i = 0;
+					date = ''
+					logLevel = ''
+					message = ''
+					for word in line.split():
+						if i == 0:
+							date += word
+						elif i == 1:
+							if len(word) > 4:
+								date += word[:-4]
+						elif i == 2:
+							logLevel += word
+						else:
+							message += word
+						i+=1
+					logs.append({'date': date, 'logLevel': logLevel, 'message': message})
+			print logs
+			return jsonify(results = logs)
+			
         @app.route('/')
         def index():
             return render_template('index.html')

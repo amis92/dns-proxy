@@ -6,6 +6,9 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='layout.css') }}">
 <script type=text/javascript src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
 <script type=text/javascript src="{{url_for('static', filename='dns-controller.js') }}"></script>
+<script type="text/javascript">
+  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
 </head>
 <body>
 <div style="display:block; width:100%; text-align:left; color: white; background-color: #eeeeee">
@@ -32,28 +35,31 @@
 		<h2 style="width: 100%; text-align: left;">Logi</h2>
         <table class="table" style="border:1px solid #000000;">
             <tr>
-                <td>IP</td>
-                <td >Strategia</td>
-                <td>Adres</td>
-            </tr>
-            <tr>
-                <td>Row 1</td>
-                <td>Row 1</td>
-                <td>Row 1</td>
-            </tr>
-            <tr>
-                <td>Row 2</td>
-                <td>Row 2</td>
-                <td>Row 2</td>
-            </tr>
-            <tr>
-                <td>Row 3</td>
-				<td>Row 3</td>
-                <td>Row 3</td>
+                <td>Data</td>
+                <td >Rodzaj</td>
+                <td>Treść</td>
             </tr>
         </table>
     </div>
   </div>
 </div>
 </body>
+<script>
+$( document ).ready(function() {
+
+    $.getJSON($SCRIPT_ROOT + '/_read_logs', {}, function(data) {
+		var html = "";
+			for(var i = 0; i < data.results.length; i++){
+				html = html + "<tr>";
+				html = html + "<td>" + data.results[i].date + "</td>"
+				html = html + "<td>" + data.results[i].logLevel + "</td>"
+				html = html + "<td>" + data.results[i].message + "</td>"
+				html = html + "</tr>";
+			}
+		
+		$('table').append(html);
+    });
+});
+</script>
+
 </html>

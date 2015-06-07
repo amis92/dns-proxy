@@ -15,6 +15,10 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(formatter)
 
+hdlr = logging.FileHandler('dnsapp.log')
+hdlr.setFormatter(formatter)
+
+logger.addHandler(hdlr)
 logger.addHandler(consoleHandler)
 
 class App(object):
