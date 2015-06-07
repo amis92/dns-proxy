@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<title>DNS Proxy</title>
-<meta charset="iso-8859-1">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='layout.css') }}">
-<script type="text/javascript" src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
-<script type="text/javascript" src="{{url_for('static', filename='dns-controller.js') }}"></script>
-<script type="text/javascript">
-  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-</script>
+    <title>DNS Proxy</title>
+    <meta charset="iso-8859-1"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='layout.css') }}"/>
+    <script type="text/javascript">
+        var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.1.9.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='dns-controller.js') }}"></script>
 </head>
 <body>
 <div style="display:block; width:100%; text-align:left; color: white; background-color: #eeeeee">
@@ -43,7 +43,7 @@
 	</div>
 	<div style="width: 50%; float: right; padding-bottom: 20px;">
 		<h2 style="width: 100%; text-align: left;">Konfiguracja</h2>
-		</br>
+	    <br/>
 		<h3 style="width: 100%; text-align: left;">Port dns</h3>
 		<input id="dnsPortInput" class="input-css" style="clear: left;" placeholder="port dns" />
 		<input id="savePortsButton" type="button" class="button-css" value="Zapisz" onclick="savePorts()" />
@@ -64,7 +64,7 @@
 	<input id="ipInput" class="input-css" style="display:none" placeholder="IP" />
 	<label id="strategySelect" style="display:none">
 		<select>
-			<option selected> respond </option>
+			<option selected="selected"> respond </option>
 			<option>forward</option>
 			<option>block</option>
 		</select>
@@ -76,27 +76,17 @@
 </body>
 <script>
 $( document ).ready(function() {
-	
-	$.getJSON($SCRIPT_ROOT + '/_load_port', {}, function(data) {
-		$('#dnsPortInput').val(data.results.dnsPort);
-    });
-    $.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
-		var html = "";
-			for(var i = 0; i < data.results.length; i++){
-				html = html + "<tr>";
-				html = html + "<td>" + data.results[i].ip + "</td>"
-				html = html + "<td>" + data.results[i].strategy + "</td>"
-				html = html + "<td>" + data.results[i].address + "</td>"
-				html = html + "<td><input id='button-"+i+"' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration("+i+")'/></td>"
-				html = html + "</tr>";
-			}
-		
-		$('table').append(html);
-    });
+    loadPort();
+    loadProxyStatus();
+	reloadConfigTable();
 });
 
-setStartStopFromJSON = function(data) {
+function setStartStopFromJSON(data) {
     $('#myonoffswitch').prop('checked', data.isAlive);
+}
+
+function loadProxyStatus() {
+    $.getJSON($SCRIPT_ROOT + '/_proxy_status', {}, setStartStopFromJSON);
 }
 
 function switchOnOff() {
@@ -109,18 +99,41 @@ function switchOnOff() {
     $.getJSON(url, {}, setStartStopFromJSON);
 }
 
+function loadPort() {
+    $.getJSON($SCRIPT_ROOT + '/_load_port', {}, function(data) {
+        $('#dnsPortInput').val(data.results.dnsPort);
+    });
+}
+
 function savePorts(){
 	$.getJSON($SCRIPT_ROOT + '/_save_port', {
 		dnsPort: $('#dnsPortInput').val()
 	}, function(data){});
 }
 
+function reloadConfigTable() {
+    $('tbody').children("tr").remove();
+    var html = "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>";
+    $.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
+        for(var i = 0; i < data.results.length; i++){
+            html = html + "<tr>";
+            html = html + "<td>" + data.results[i].ip + "</td>";
+            html = html + "<td>" + data.results[i].strategy + "</td>";
+            html = html + "<td>" + data.results[i].address + "</td>";
+            html = html + "<td><input id='button-" + i + "' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration(" + i + ")'/></td>";
+            html = html + "</tr>";
+        }
+		
+        $('table').append(html);
+    });
+}
+
 function addConfiguration(){
-	$("#addButton").hide();
-	$("#saveButton").css("display", "inline");
-	$("#ipInput").css("display", "inline");
-	$("#strategySelect").css("display", "inline");
-	$("#addressInput").css("display", "inline");
+    $("#addButton").hide();
+    $("#saveButton").css("display", "inline");
+    $("#ipInput").css("display", "inline");
+    $("#strategySelect").css("display", "inline");
+    $("#addressInput").css("display", "inline");
 }
 
 function saveConfiguration(){
@@ -130,21 +143,8 @@ function saveConfiguration(){
 		strategy: $("#strategySelect option:selected").text(),
 		address: $("#addressInput").val()
 	}, function(data){});
-	
-	$('tbody').children("tr").remove();
-    var html = "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>";
-	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
-			for(var i = 0; i < data.results.length; i++){
-				html = html + "<tr>";
-				html = html + "<td>" + data.results[i].ip + "</td>"
-				html = html + "<td>" + data.results[i].strategy + "</td>"
-				html = html + "<td>" + data.results[i].address + "</td>"
-			    html = html + "<td><input id='button-" + i + "' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration(" + i + ")'/></td>";
-				html = html + "</tr>";
-			}
-		
-		$('table').append(html);
-    });
+
+    reloadConfigTable();
 	
 	$("#addButton").show();
 	$("#saveButton").hide();
@@ -161,21 +161,8 @@ function deleteConfiguration(buttonId){
 	$.getJSON($SCRIPT_ROOT + '/_delete_configuration', {
 		id: buttonId
 	}, function(data){});
-
-	$('tbody').children("tr").remove();
-    var html = "<tr><td>IP</td><td >Strategia</td><td>Adres</td><td style='width: 100px;'></td></tr>";
-	$.getJSON($SCRIPT_ROOT + '/_load_configuration', {}, function(data) {
-			for(var i = 0; i < data.results.length; i++){
-				html = html + "<tr>";
-			    html = html + "<td>" + data.results[i].ip + "</td>";
-			    html = html + "<td>" + data.results[i].strategy + "</td>";
-			    html = html + "<td>" + data.results[i].address + "</td>";
-			    html = html + "<td><input id='button-" + i + "' type='button' style='padding: 0; margin: 0; width: 40px;' class='button-css' value='Usun' onclick='deleteConfiguration(" + i + ")'/></td>";
-				html = html + "</tr>";
-			}
-		
-		$('table').append(html);
-    });
+    
+	reloadConfigTable();
 }
 </script>
 

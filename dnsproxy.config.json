@@ -3,7 +3,7 @@
   "config": {
    "behaviors": [], 
    "httpAccessPort": 8080, 
-   "dnsPort": 1001
+   "dnsPort": 53
   }
  }
 }

@@ -8,9 +8,14 @@ from flask import Flask, jsonify, render_template, request
 
 from dnsproxy.config import Config
 from dnsproxy.behavior import Behavior
+import logging
+
+logger = logging.getLogger('dnsproxy.website')
 
 class WebServer(object):
     def __init__(self, config = None, proxyserver = None):
+        self.logger = logging.getLogger('dnsproxy.website.WebServer')
+        self.logger.debug('server creation started')
         if not config:
             config = Config()
         self.config = config
@@ -28,9 +33,14 @@ class WebServer(object):
             proxyserver.stop()
             return jsonify(isAlive=proxyserver.is_alive())
 
+        @app.route('/_proxy_status')
+        def is_proxy_alive():
+            return jsonify(isAlive=proxyserver.is_alive())
+
         @app.route('/_save_port')
         def save_port():
             config.dns_port = request.args.get('dnsPort', 0, type=int)
+            self.logger.debug('saved DNS port {port}', port = config.dns_port)
             config.to_file()
             return jsonify(result = True)
 
@@ -72,6 +82,8 @@ class WebServer(object):
         @app.route('/logs.html')
         def logs():
             return render_template('logs.html')
+
+        self.logger.info('server created')
 
 if __name__ == '__main__':
     app = WebServer().app
