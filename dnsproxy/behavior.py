@@ -48,7 +48,7 @@ class Behavior(object):
         self.loglevel = loglevel
 
     def __str__(self):
-        return "Behavior(address='{addr}', strategy='{strategy}', ip = '{ip}', log_level = '{loglevel}')".format(
+        return "Behavior(address='{addr}', strategy='{strategy}', ip = '{ip}', loglevel = '{loglevel}')".format(
             addr = self.address,
             strategy = self.strategy,
             ip = self.ip,
