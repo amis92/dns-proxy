@@ -48,7 +48,7 @@ class Behavior(object):
         self.loglevel = loglevel
 
     def __str__(self):
-        return "Behavior(address='{addr}', strategy='{strategy}', ip = '{ip}', loglevel = '{loglevel}')".format(
+        return "Behavior(address = '{addr}', strategy = '{strategy}', ip = '{ip}', loglevel = '{loglevel}')".format(
             addr = self.address,
             strategy = self.strategy,
             ip = self.ip,
@@ -63,7 +63,7 @@ class Behavior(object):
         Returns True if it handles.
         """
         m = match(".*{0}".format(self.address), address)
-        self.logger.debug("handles check: address '{addr}' by {b}, result: {r}".format(b = str(self), addr=address, r = m != None))
+        self.logger.debug("{b} - Checking handling address '{addr}', result: {r}".format(b = str(self), addr=address, r = m != None))
         return m != None
 
     def handle(self, request):
@@ -71,7 +71,7 @@ class Behavior(object):
 
         Returns response or None if no response should be sent.
         """
-        self.logger.debug("handle: {b}, request: {r}".format(b = str(self), r = request))
+        self.logger.debug("{b} - Handling request:\n{r}".format(b = str(self), r = request))
         return self.strategies[self.strategy](self, request)
 
     def block(self, request):
@@ -107,7 +107,7 @@ class Behavior(object):
     def respond(self, request):
         """Returns response containing self.ip."""
         address = str(request.questions[0].qname)
-        self.logger.log(self.parseloglevel(), "{b} - Responding to request for address:'{addr}'".format(addr=address, b=str(self)))
+        self.logger.log(self.parseloglevel(), "{b} - Responding to request for address:'{addr}'".format(b=str(self), addr=address))
         response = request.reply()
         response.add_answer(RR(address, QTYPE.A, rdata=A(self.ip)))
         return response

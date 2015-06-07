@@ -75,10 +75,10 @@ class UdpThread(Thread):
                 try:
                     self.receive_and_handle(udpSocket)
                 except socket.error, err:
-                    self.logger.exception('UDP handling threw exception')
                     if err.errno == socket.errno.WSAECONNRESET:
-                        pass
+                        self.logger.debug('UDP connection dropped (socket.errno.WSAECONNRESET)')
                     else:
+                        self.logger.exception('UDP handling threw exception')
                         raise
         finally:
             self.server.stopUdp()
@@ -148,22 +148,14 @@ class Server:
 
     def createUdpSocket(self):
         udpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        except AttributeError:
-            self.logger.debug('UDP sockopt setting failed', exc_info = True)
-            udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udpSocket.bind((self.host, self.config.dns_port))
         self.logger.debug('UDP socket bound to {host}:{port}'.format(host=self.host, port=self.config.dns_port))
         return udpSocket
 
     def createTcpSocket(self):
         tcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        except AttributeError:
-            self.logger.debug('UDP sockopt setting failed', exc_info = True)
-            udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tcpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         tcpSocket.bind((self.host, self.config.dns_port))
         self.logger.debug('TCP socket bound to {host}:{port}'.format(host=self.host, port=self.config.dns_port))
         return tcpSocket
