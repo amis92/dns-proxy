@@ -1,6 +1,6 @@
 """DNS proxy configuration management module."""
 
-import behavior
+from behavior import Behavior
 import json
 import logging
 
@@ -38,7 +38,7 @@ class Config(object):
         config_json = json[ROOT_KEY][CONF_KEY]
         self.http_access_port = config_json[HTTP_ACCESS_PORT_KEY]
         self.dns_port = config_json[DNS_PORT_KEY]
-        self.behaviors = [behavior.create(jsonBehavior) for jsonBehavior in config_json[BEHAVIORS_KEY]]
+        self.behaviors = [Behavior().from_json(jsonBehavior) for jsonBehavior in config_json[BEHAVIORS_KEY]]
         return self
 
     def from_file(self, filename = JSON_CONF_DEFAULT_FILE):
