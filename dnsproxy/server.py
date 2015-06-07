@@ -55,23 +55,36 @@ class UdpThread(Thread):
         self.name = 'dnsproxy-UDP'
         self.logger.debug('created')
 
+    def receive_and_handle(self, udpSocket):
+        rlist, wlist, xlist = select.select([udpSocket], [], [], timeout)
+        if not rlist:
+            return
+        data, addr = udpSocket.recvfrom(BUFFER_SIZE)
+        request = DNSRecord.parse(data)
+        self.logger.debug("handling request from '{addr}'".format(addr=addr))
+        response = first_or_default(self.server.config.behaviors, request).handle(request)
+        if response:
+            udpSocket.sendto(response.pack(), addr)
+
     def run(self):
         self.active = True
         self.logger.info('thread started')
         udpSocket = self.server.createUdpSocket()
-        while self.active:
-            rlist, wlist, xlist = select.select([udpSocket], [], [], timeout)
-            if not rlist:
-                continue
-            data, addr = udpSocket.recvfrom(BUFFER_SIZE)
-            request = DNSRecord.parse(data)
-            self.logger.debug("handling request from '{addr}'".format(addr=addr))
-            response = first_or_default(self.server.config.behaviors, request).handle(request)
-            if response:
-                udpSocket.sendto(response.pack(), addr)
-        #udpSocket.shutdown(1)
-        udpSocket.close()
-        self.logger.info('thread stopped')
+        try:
+            while self.active:
+                try:
+                    self.receive_and_handle(udpSocket)
+                except socket.error, err:
+                    self.logger.exception('UDP handling threw exception')
+                    if err.errno == socket.errno.WSAECONNRESET:
+                        udpSocket = self.server.createUdpSocket()
+                    else:
+                        raise
+        finally:
+            self.server.stopUdp()
+            #udpSocket.shutdown(1)
+            udpSocket.close()
+            self.logger.info('thread stopped')
 
     def stop(self):
         self.active = False
