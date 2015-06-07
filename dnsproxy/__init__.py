@@ -6,14 +6,16 @@ from dnsproxy.config import Config
 from threading import Thread
 import logging
 
-# below config is to be removed
-logging.basicConfig(format="%(asctime)-15s %(levelname)-8s %(name)s.%(funcName)s @ %(threadName)s : %(message)s")
-
 logger = logging.getLogger('dnsproxy')
-
-# as well as those
 logger.setLevel(logging.DEBUG)
-logger.info('dnsproxy init')
+
+formatter = logging.Formatter("%(asctime)-15s %(levelname)-8s %(name)s.%(funcName)s @ %(threadName)s : %(message)s")
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setFormatter(formatter)
+
+logger.addHandler(consoleHandler)
 
 class App(object):
     """DNS proxy runnable app."""
