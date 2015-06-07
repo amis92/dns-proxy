@@ -34,6 +34,7 @@ class TcpThread(Thread):
             if not data:
                 continue
             request = DNSRecord.parse(data)
+            self.logger.debug("handling request from '{addr}'".format(addr=addr))
             response = first_or_default(self.server.config.behaviors, request).handle(request)
             if response:
                 tcpSocket.send(response.pack())
@@ -64,6 +65,7 @@ class UdpThread(Thread):
                 continue
             data, addr = udpSocket.recvfrom(BUFFER_SIZE)
             request = DNSRecord.parse(data)
+            self.logger.debug("handling request from '{addr}'".format(addr=addr))
             response = first_or_default(self.server.config.behaviors, request).handle(request)
             if response:
                 udpSocket.sendto(response.pack(), addr)
