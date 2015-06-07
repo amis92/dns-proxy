@@ -90,17 +90,18 @@ class WebServer(object):
 					logLevel = ''
 					message = ''
 					for word in line.split():
-						if i == 0:
+						if i == 0 and word[0].isdigit():
 							date += word
 						elif i == 1:
-							if len(word) > 4:
-								date += word[:-4]
-						elif i == 2:
+							if len(word) > 4 and len(date) > 1:
+								date += ' ' + word[:-4]
+						elif i == 2 and len(date) > 1:
 							logLevel += word
-						else:
-							message += word
+						elif len(date) > 1:
+							message += word + ' '
 						i+=1
-					logs.append({'date': date, 'logLevel': logLevel, 'message': message})
+					if len(date) > 1:
+						logs.append({'date': date, 'logLevel': logLevel, 'message': message})
 			print logs
 			return jsonify(results = logs)
 			
