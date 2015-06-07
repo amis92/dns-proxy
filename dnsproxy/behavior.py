@@ -84,14 +84,17 @@ class Behavior(object):
         """Returns response received from system resolver."""
         address = str(request.questions[0].qname)
         self.logger.log(self.parseloglevel(), "{b} - Forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
+        fwdresolver = dns.resolver.Resolver()
+        fwdresolver.nameservers = ['8.8.8.8']
         try:
-            answers = dns.resolver.query(address, 'A')
+            answers = fwdresolver.query(address, 'A')
         except DNSException:
             self.logger.exception("{b} - Exception when forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
             return None
         response = request.reply()
         for rdata in answers:
             ip = rdata.address
+            self.logger.log(self.parseloglevel(), "{b} - Forward returned '{ip}' for '{addr}'".format(b = str(self), ip=ip, addr=address))
             response.add_answer(RR(address, QTYPE.A, rdata=A(ip)))
         return response
 
