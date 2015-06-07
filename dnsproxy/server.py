@@ -141,6 +141,7 @@ class Server:
             self.logger.debug('UDP sockopt setting failed', exc_info = True)
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udpSocket.bind((self.host, self.config.dns_port))
+        self.logger.debug('UDP socket bound to {host}:{port}'.format(host=self.host, port=self.config.dns_port))
         return udpSocket
 
     def createTcpSocket(self):
@@ -151,6 +152,7 @@ class Server:
             self.logger.debug('UDP sockopt setting failed', exc_info = True)
             udpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         tcpSocket.bind((self.host, self.config.dns_port))
+        self.logger.debug('TCP socket bound to {host}:{port}'.format(host=self.host, port=self.config.dns_port))
         return tcpSocket
 
 class DemoApp:
