@@ -62,7 +62,7 @@ class Behavior(object):
 
         Returns True if it handles.
         """
-        m = match(self.address, address)
+        m = match(".*{0}".format(self.address), address)
         self.logger.debug("handles check: address '{addr}' by {b}, result: {r}".format(b = str(self), addr=address, r = m != None))
         return m != None
 
