@@ -71,7 +71,7 @@ class Behavior(object):
 
         Returns response or None if no response should be sent.
         """
-        self.logger.debug("handle: {b}, request: {r}", b = str(self), r = request)
+        self.logger.debug("handle: {b}, request: {r}".format(b = str(self), r = request))
         return self.strategies[self.strategy](self, request)
 
     def block(self, request):
