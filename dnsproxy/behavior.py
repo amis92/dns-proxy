@@ -88,6 +88,7 @@ class Behavior(object):
             answers = dns.resolver.query(address, 'A')
         except DNSException:
             self.logger.exception("{b} - Exception when forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
+            return None
         response = request.reply()
         for rdata in answers:
             ip = rdata.address
