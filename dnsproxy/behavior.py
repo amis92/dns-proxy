@@ -78,7 +78,9 @@ class Behavior(object):
         """Returns None."""
         address = str(request.questions[0].qname)
         self.logger.log(self.parseloglevel(), "{b} - Blocking request for address:'{addr}'".format(addr=address, b=str(self)))
-        return None
+        request.header.rcode = 3
+        response = request.reply()
+        return response
 
     def forward(self, request):
         """Returns response received from system resolver."""
@@ -88,6 +90,10 @@ class Behavior(object):
         fwdresolver.nameservers = ['8.8.8.8']
         try:
             answers = fwdresolver.query(address, 'A')
+        except dns.resolver.NXDOMAIN:
+            request.header.rcode = 3
+            response = request.reply()
+            return response
         except DNSException:
             self.logger.exception("{b} - Exception when forwarding request for address:'{addr}'".format(addr=address, b=str(self)))
             return None
