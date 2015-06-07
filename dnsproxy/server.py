@@ -77,7 +77,7 @@ class UdpThread(Thread):
                 except socket.error, err:
                     self.logger.exception('UDP handling threw exception')
                     if err.errno == socket.errno.WSAECONNRESET:
-                        udpSocket = self.server.createUdpSocket()
+                        pass
                     else:
                         raise
         finally:
