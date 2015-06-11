@@ -30,17 +30,18 @@ class App(object):
         self.config = Config().from_file()
         self.server = Server(self.config, host)
         self.webserver = WebServer(self.config, self.server)
-        #self.website_thread = Thread(name='WebServer-thread', target = self.run_website_blocking)
+        self.website_thread = Thread(name='WebServer-thread', target = self.run_website_blocking)
         self.logger.info('created')
-        self.run_website_blocking()
 
     def run(self):
         """Starts DNS proxy server and config website server according to provided configuration.
         """
         self.logger.debug('preparing to run')
         self.server.start()
-        self.website_thread.start()
+        #self.website_thread.start()
         self.logger.info('server threads started')
+        self.run_website_blocking()
+        self.server.stop()
 
     def run_website_blocking(self):
         self.webserver.app.run(host = '127.0.0.1', port = self.config.http_access_port)
