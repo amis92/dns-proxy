@@ -1,0 +1,16 @@
+{
+ "dnsProxy": {
+  "config": {
+   "behaviors": [
+    {
+     "logLevel": "DEBUG", 
+     "ip": "1.1.1.1", 
+     "address": "onet.pl", 
+     "strategy": "respond"
+    }
+   ], 
+   "httpAccessPort": 8080, 
+   "dnsPort": 53
+  }
+ }
+}

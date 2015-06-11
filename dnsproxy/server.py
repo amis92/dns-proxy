@@ -90,9 +90,13 @@ class UdpThread(Thread):
         self.active = False
 
 class Server:
-    def __init__(self, config = None):
+    def __init__(self, config = None, host = None):
         self.logger = logging.getLogger('dnsproxy.server.Server')
-        self.host = self.getNameservers()[0]
+        #self.host = self.getNameservers()[0]
+        if host:
+            self.host = host
+        else:
+            self.host = socket.gethostbyname(socket.gethostname())
         if not config:
             config = Config()
         self.config = config
